@@ -3,13 +3,16 @@ import pandas as pd
 ROOT=Path(__file__).parent
 DATA=ROOT/"data"
 PARTS=DATA/"parts"
-MIN_ESTABLISHED=5
+MIN_ESTABLISHED=3
 NEG_PER_POS=3
 
 def make_labels(df):
     low=df[df["rating"]<=2]
     sus=low[(low["direction"]=="bomb") & low["one_shot"]]
-    gen=low[(~low["in_burst"]) & (low["n_reviews"]>=MIN_ESTABLISHED)]
+    bomb_titles = sus["movie"].unique()
+    gen = low[(~low["in_burst"]) & (low["n_reviews"] >= MIN_ESTABLISHED)
+              & low["movie"].isin(bomb_titles)]
+    print("suspicious:", len(sus), "| matched genuine:", len(gen))
     gen=gen.sample(n=min(len(gen),NEG_PER_POS*len(sus)),random_state=42)
     sus=sus.assign(label=1)
     gen=gen.assign(label=0)
