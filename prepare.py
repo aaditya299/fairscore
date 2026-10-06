@@ -5,7 +5,8 @@ import pandas as pd
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
-RAW = DATA / "part-01.json"
+MAX_FILES = 4
+RAW_FILES = sorted(DATA.glob("part-*.json"))[:MAX_FILES]
 PARTS = DATA / "parts"
 OUT = DATA / "reviews.pkl"
 BATCH = 50_000  
@@ -49,12 +50,13 @@ def main():
         print(f"  batch {part:03d} done, {total:,} reviews so far", flush=True)
         batch, part = [], part + 1
 
-    print("streaming", RAW, flush=True)
-    with open(RAW, "rb") as f:
-        for record in ijson.items(f, "item"):  # one review at a time
-            batch.append(record)
-            if len(batch) >= BATCH:
-                flush()
+    for raw in RAW_FILES:
+        print("streaming", raw.name, flush=True)
+        with open(raw, "rb") as f:
+            for record in ijson.items(f, "item"):
+                batch.append(record)
+                if len(batch) >= BATCH:
+                    flush()
     if batch:
         flush()
 
