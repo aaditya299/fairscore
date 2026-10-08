@@ -52,6 +52,7 @@ def main():
     df=pd.read_pickle(DATA/"reviews.pkl")
     daily=build_daily(df)
     flagged=flag(daily)
+    daily.to_pickle(DATA / "daily.pkl")  
     flagged.to_pickle(DATA/"flagged_days.pkl")
     print("titles analysed: ",daily["movie"].nunique())
     print("title-days analyzed: ",len(daily))
