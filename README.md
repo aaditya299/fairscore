@@ -28,6 +28,23 @@ Ratings below are averages of the reviews in the dataset sample, not IMDb's offi
 Tenet had no burst, and Wonder Woman 1984 had a sharp rating drop that did not
 look like a bombing (about 30% 1-star, below the threshold), so neither is adjusted.
 
+## Sensitivity to thresholds
+
+I reran the flagging with three strictness levels (loose, default, strict share
+thresholds) and three `SHIFT` values. Cells show suspect share / down-weighted rating
+(shift 0.3 shown, since the share thresholds already dominate and `SHIFT` changed
+almost nothing).
+
+| Setting | Flagged title-days | Laxmii | Coolie No. 1 | Dil Bechara | Tenet | WW84 |
+|---|---|---|---|---|---|---|
+| loose | 1215 | 71% / 2.66 | 59% / 1.71 | 80% / 9.29 | 0% / 6.28 | 0% / 4.00 |
+| default | 761 | 71% / 2.66 | 59% / 1.71 | 77% / 9.32 | 0% / 6.28 | 0% / 4.00 |
+| strict | 393 | 71% / 2.65 | 59% / 1.71 | 64% / 9.44 | 0% / 6.28 | 0% / 4.00 |
+
+The bombing cases and both controls are stable across settings. The inflation case
+(Dil Bechara) changes in size but not in direction. These titles are the clearest
+cases, so this does not show that borderline titles are stable.
+
 ## How it works
 
 1. **`prepare.py`**: streams the large JSON files in batches and cleans them
