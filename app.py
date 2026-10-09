@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import streamlit as st
+import altair as alt
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -35,17 +36,37 @@ d = daily[daily["movie"] == choice].sort_values("date").copy()
 d["normal days"] = d["n"].where(d["direction"].isna(), 0)
 d["flagged burst days"] = d["n"].where(d["direction"].notna(), 0)
 
-st.markdown("  Reviews per day   (red = flagged burst day)")
-st.bar_chart(d, x="date", y=["normal days", "flagged burst days"],
-             color=["#4c78a8", "#e45756"])
 span = (d["date"].max() - d["date"].min()).days
+if span <= 60:
+    axis = alt.Axis(format="%b %d", tickCount="day", labelAngle=-45)
+elif span <= 400:
+    axis = alt.Axis(format="%b %Y", tickCount="month")
+else:
+    axis = alt.Axis(format="%Y", tickCount="year")
+
+st.markdown("**Reviews per day** (red = flagged burst day)")
+long = d.melt(id_vars="date", value_vars=["normal days", "flagged burst days"],
+              var_name="type", value_name="reviews")
+bars = alt.Chart(long).mark_bar().encode(
+    x=alt.X("date:T", axis=axis, title=None),
+    y=alt.Y("reviews:Q", title="reviews/day"),
+    color=alt.Color("type:N", legend=alt.Legend(title=None),
+                    scale=alt.Scale(domain=["normal days", "flagged burst days"],
+                                    range=["#4c78a8", "#e45756"])),
+)
+st.altair_chart(bars, use_container_width=True)
+
 rule = "W" if span > 120 else "D"
-st.markdown("  Average rating per week  " if rule == "W" else "**Average rating per day**")
+st.markdown("**Average rating per week**" if rule == "W" else "**Average rating per day**")
 d["total"] = d["mean"] * d["n"]
 w = d.set_index("date")[["total", "n"]].resample(rule).sum()
-w = w[w["n"] > 0]
-w["mean rating"] = w["total"] / w["n"]
-st.line_chart(w["mean rating"])
+w = w[w["n"] >= (5 if rule == "W" else 1)]
+w["mean_rating"] = w["total"] / w["n"]
+line = alt.Chart(w.reset_index()).mark_line().encode(
+    x=alt.X("date:T", axis=axis, title=None),
+    y=alt.Y("mean_rating:Q", title="mean rating", scale=alt.Scale(domain=[1, 10])),
+)
+st.altair_chart(line, use_container_width=True)
 
 dirs=set(d["direction"].dropna())
 if "bomb" in dirs:
@@ -53,7 +74,7 @@ if "bomb" in dirs:
                "are almost all 1-2 stars.")
 if "inflate" in dirs:
     st.info("This title has flagged inflation bursts. A wave of 9-10 star reviews "
-            "can be genuine fan excitement, so read these are enthusiasm bursts, "
+            "can be genuine fan excitement, so read these as enthusiasm bursts, "
             "not proof of fakes.")
 
 st.divider()
