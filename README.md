@@ -102,12 +102,14 @@ that number only if you have the memory.
 ## Project layout
 
 ```
-prepare.py    clean and cache the raw data
-bursts.py     detect burst days per title
-features.py   reviewer features and per-review burst flags
-adjust.py     adjusted ratings per title
-app.py        Streamlit dashboard
-labels.py     weak labels (experiment)
-model.py      text model (experiment)
-NOTES.md      running notes on findings
+prepare.py       clean and cache the raw data
+explore.py       daily rating charts for any title
+bursts.py        detect burst days per title
+features.py      reviewer features and per-review burst flags
+adjust.py        adjusted ratings per title
+sensitivity.py   re-run flagging with different thresholds
+app.py           Streamlit dashboard
+labels.py        weak labels (experiment)
+model.py         text model (experiment)
+NOTES.md         running notes on findings
 ```
